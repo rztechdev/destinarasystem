@@ -1,0 +1,205 @@
+@extends('layouts.partner')
+
+@section('title', 'Ajukan Destinasi Baru')
+
+@section('content')
+<div class="space-y-8 max-w-4xl mx-auto">
+
+    <!-- Header Breadcrumb & Judul -->
+    <div class="pb-4 border-b border-[#2B211E]/12">
+        <div class="flex items-center gap-2 text-xs text-[#2B211E]/60 mb-2">
+            <a href="{{ route('mitra.dashboard') }}" class="hover:text-[#703A3A]">Dashboard</a>
+            <span>/</span>
+            <a href="{{ route('mitra.destinations') }}" class="hover:text-[#703A3A]">Tapak Kelolaan</a>
+            <span>/</span>
+            <span class="text-[#703A3A] font-semibold">Ajukan Tapak Baru</span>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+                <h1 class="font-serif text-2xl sm:text-3xl font-bold text-[#2B211E]">Formulir Kurasi Pengajuan Tapak Baru</h1>
+                <p class="text-xs sm:text-sm text-[#2B211E]/70 mt-0.5">
+                    Daftarkan laboratorium alam atau situs budaya Anda agar dapat diakses oleh jejaring sekolah dan perguruan tinggi.
+                </p>
+            </div>
+
+            <span class="px-3 py-1.5 bg-[#b87a38]/10 text-[#b87a38] text-xs font-bold uppercase tracking-wider border border-[#b87a38]/20">
+                Tahap Telaah Kurasi Admin
+            </span>
+        </div>
+    </div>
+
+    <form action="{{ route('mitra.destinations.store') }}" method="POST" class="space-y-8">
+        @csrf
+
+        <!-- 1. Identitas & Lokasi Geografis -->
+        <div class="rgs-card p-6 border-t-4 border-t-[#703A3A] space-y-5">
+            <div class="flex items-center justify-between pb-3 border-b border-[#2B211E]/10">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#703A3A] text-[20px]">location_on</span>
+                    <h2 class="font-serif text-lg font-bold text-[#2B211E]">1. Identitas & Wilayah Administratif Tapak</h2>
+                </div>
+                <span class="text-[11px] text-[#2B211E]/60">Wajib Lengkap</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2 space-y-1">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-[#2B211E]">
+                        Nama Resmi Tapak Edukasi / Destinasi <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="name" placeholder="Contoh: Kawasan Konservasi Kebun Bambu Purba Cikole" required class="w-full bg-[#faf6f0] border border-[#2B211E]/20 px-3.5 py-2 text-xs font-medium text-[#2B211E] focus:outline-none focus:border-[#703A3A]">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-[#2B211E]">
+                        Kategori Tapak Pembelajaran <span class="text-red-500">*</span>
+                    </label>
+                    <select name="category" class="w-full bg-[#faf6f0] border border-[#2B211E]/20 px-3.5 py-2 text-xs font-medium text-[#2B211E] focus:outline-none focus:border-[#703A3A]">
+                        <option value="desa_wisata">Desa Wisata Berbasis Adat & Komunitas</option>
+                        <option value="konservasi_alam">Kawasan Konservasi Hutan & Air</option>
+                        <option value="situs_budaya">Situs Sejarah, Arkeologi & Budaya</option>
+                        <option value="pertanian_berkelanjutan">Agroekologi & Pangan Berkelanjutan</option>
+                        <option value="bahari">Konservasi Pesisir & Ekosistem Bahari</option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-[#2B211E]">
+                        Kota / Kabupaten & Provinsi <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" name="city" placeholder="Kabupaten Bangli" required class="w-full bg-[#faf6f0] border border-[#2B211E]/20 px-3 py-2 text-xs font-medium focus:outline-none focus:border-[#703A3A]">
+                        <input type="text" name="province" placeholder="Bali" required class="w-full bg-[#faf6f0] border border-[#2B211E]/20 px-3 py-2 text-xs font-medium focus:outline-none focus:border-[#703A3A]">
+                    </div>
+                </div>
+
+                <div class="sm:col-span-2 space-y-1">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-[#2B211E]">
+                        Deskripsi Naratif Tapak & Sejarah Adat <span class="text-red-500">*</span>
+                    </label>
+                    <textarea name="description" rows="3" placeholder="Ceritakan latar belakang wilayah, kekayaan ekosistem, serta tata kelola kearifan lokal yang dipelihara masyarakat..." required class="w-full bg-[#faf6f0] border border-[#2B211E]/20 p-3 text-xs text-[#2B211E] focus:outline-none focus:border-[#703A3A]"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Nilai Edukasi & Modul Kurikulum -->
+        <div class="rgs-card p-6 border-t-4 border-t-[#703A3A] space-y-5">
+            <div class="flex items-center justify-between pb-3 border-b border-[#2B211E]/10">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#703A3A] text-[20px]">school</span>
+                    <h2 class="font-serif text-lg font-bold text-[#2B211E]">2. Nilai Edukasi & Relevansi Kurikulum</h2>
+                </div>
+                <span class="text-[11px] text-[#2B211E]/60">Acuan Kurikulum Merdeka & Riset</span>
+            </div>
+
+            <div class="space-y-4">
+                <div class="space-y-1">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-[#2B211E]">
+                        Fokus Modul Ilmiah & Pembelajaran Lapangan <span class="text-red-500">*</span>
+                    </label>
+                    <textarea name="educational_highlights" rows="2" placeholder="Contoh: Pembelajaran zonasi hutan suci adat Palemahan, identifikasi 15 jenis vegetasi bambu endemik, dan workshop kerajinan bambu bersama pengrajin sepuh..." required class="w-full bg-[#faf6f0] border border-[#2B211E]/20 p-3 text-xs text-[#2B211E] focus:outline-none focus:border-[#703A3A]"></textarea>
+                </div>
+
+                <!-- Fasilitas Rombongan (Checkboxes) -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-[#2B211E]">
+                        Fasilitas Sarana Rombongan Tersedia
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <label class="flex items-center gap-2 p-2 bg-[#faf6f0] border border-[#2B211E]/10 cursor-pointer">
+                            <input type="checkbox" name="facilities[]" value="Area Parkir Bus Pariwisata Besar" checked class="accent-[#703A3A]">
+                            <span>Area Parkir Bus Pariwisata Besar</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 bg-[#faf6f0] border border-[#2B211E]/10 cursor-pointer">
+                            <input type="checkbox" name="facilities[]" value="Balai Pertemuan / Pendopo Rombongan" checked class="accent-[#703A3A]">
+                            <span>Balai Pertemuan / Pendopo Rombongan</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 bg-[#faf6f0] border border-[#2B211E]/10 cursor-pointer">
+                            <input type="checkbox" name="facilities[]" value="Toilet Bersih Standar Wisata (Min. 4 Pintu)" checked class="accent-[#703A3A]">
+                            <span>Toilet Bersih Standar Wisata (Min. 4 Pintu)</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 bg-[#faf6f0] border border-[#2B211E]/10 cursor-pointer">
+                            <input type="checkbox" name="facilities[]" value="Pemandu Lokal Adat / Fasilitator Edukasi" checked class="accent-[#703A3A]">
+                            <span>Pemandu Lokal Adat / Fasilitator Edukasi</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 bg-[#faf6f0] border border-[#2B211E]/10 cursor-pointer">
+                            <input type="checkbox" name="facilities[]" value="Akses Jaringan Komunikasi / WiFi" class="accent-[#703A3A]">
+                            <span>Akses Jaringan Komunikasi / WiFi</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 bg-[#faf6f0] border border-[#2B211E]/10 cursor-pointer">
+                            <input type="checkbox" name="facilities[]" value="Penyediaan Konsumsi Tradisional Lokal" class="accent-[#703A3A]">
+                            <span>Penyediaan Konsumsi Tradisional Lokal</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Tarif Retribusi & Kapasitas Okupansi -->
+        <div class="rgs-card p-6 border-t-4 border-t-[#703A3A] space-y-5">
+            <div class="flex items-center justify-between pb-3 border-b border-[#2B211E]/10">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#703A3A] text-[20px]">monetization_on</span>
+                    <h2 class="font-serif text-lg font-bold text-[#2B211E]">3. Tarif Retribusi & Kuota Rombongan</h2>
+                </div>
+                <span class="text-[11px] text-[#2B211E]/60">Hak Pengelola: 90% Bersih</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-[#2B211E]">
+                        Tarif Retribusi Edukasi per Peserta (Rp) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2 text-xs font-bold text-[#2B211E]/60">Rp</span>
+                        <input type="number" name="price_per_pax" value="35000" min="10000" max="1000000" step="5000" required class="w-full bg-[#faf6f0] border border-[#2B211E]/20 pl-10 pr-3.5 py-2 text-xs font-bold text-[#2B211E] focus:outline-none focus:border-[#703A3A]">
+                    </div>
+                    <span class="text-[10px] text-[#2B211E]/60">Tarif masuk kawasan & modul pendampingan</span>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-[#2B211E]">
+                        Kapasitas Maksimal Harian (Orang) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="daily_capacity" value="100" min="20" max="500" class="w-full bg-[#faf6f0] border border-[#2B211E]/20 px-3.5 py-2 text-xs font-bold text-[#2B211E] focus:outline-none focus:border-[#703A3A]">
+                    <span class="text-[10px] text-[#2B211E]/60">Batas daya tampung kawasan per hari</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Kepatuhan FPIC & Surat Kesiapan Pengelola -->
+        <div class="rgs-card p-6 border-t-4 border-t-[#51634b] space-y-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-[#2B211E]/10">
+                <span class="material-symbols-outlined text-[#51634b] text-[20px]">verified</span>
+                <h2 class="font-serif text-lg font-bold text-[#2B211E]">4. Kesepakatan Lembaga Adat & Protokol FPIC</h2>
+            </div>
+
+            <p class="text-xs text-[#2B211E]/75 leading-relaxed">
+                Destinara menjunjung tinggi prinsip *Free, Prior and Informed Consent* (FPIC). Dengan mengajukan tapak ini, pengelola menyatakan telah mengantongi izin dari tetua adat / pimpinan lembaga pengelola untuk menerima rombongan pelajar dan peneliti secara terbuka dan aman.
+            </p>
+
+            <div class="p-3.5 bg-[#51634b]/8 border border-[#51634b]/20 flex items-start gap-3">
+                <input type="checkbox" name="fpic_agreement" value="1" id="fpic" checked required class="mt-1 accent-[#51634b]">
+                <label for="fpic" class="text-xs cursor-pointer">
+                    <span class="font-bold text-[#2B211E] block">Pernyataan Kesiapan Lembaga Pengelola Tapak</span>
+                    <span class="text-[#2B211E]/70 leading-relaxed block mt-0.5">
+                        Saya menjamin bahwa lokasi ini aman untuk rombongan pelajar, memiliki izin operasional adat/desa, serta bersedia menyambut delegasi sesuai tanggal yang disepakati.
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Tombol Kirim Pengajuan -->
+        <div class="flex items-center justify-end gap-3 pt-2">
+            <a href="{{ route('mitra.destinations') }}" class="rgs-btn-outline px-5 py-2.5 text-xs font-bold uppercase tracking-wider">
+                Batal
+            </a>
+            <button type="submit" class="rgs-btn-primary px-6 py-2.5 text-xs font-bold uppercase tracking-wider shadow-sm flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">send</span>
+                <span>Kirim ke Antrean Kurasi Admin</span>
+            </button>
+        </div>
+
+    </form>
+
+</div>
+@endsection

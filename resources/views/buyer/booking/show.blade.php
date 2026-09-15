@@ -1,0 +1,370 @@
+@extends('layouts.buyer')
+
+@section('title', 'Dossier Pesanan #' . $booking->booking_code)
+
+@section('content')
+<div class="space-y-8">
+
+    <!-- Header Dossier & Aksi -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#2B211E]/12">
+        <div>
+            <div class="flex items-center gap-2 text-xs text-[#2B211E]/60 mb-2">
+                <a href="{{ route('buyer.dashboard') }}" class="hover:text-[#703A3A]">Dashboard</a>
+                <span>/</span>
+                <a href="{{ route('buyer.history') }}" class="hover:text-[#703A3A]">Riwayat</a>
+                <span>/</span>
+                <span class="text-[#703A3A] font-semibold">{{ $booking->booking_code }}</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <h1 class="font-serif text-2xl sm:text-3xl font-bold text-[#2B211E]">
+                    Dossier Pesanan: {{ $booking->destination->name }}
+                </h1>
+
+                @if($booking->status === 'dikonfirmasi')
+                    <span class="px-3 py-1 bg-[#51634b]/15 text-[#51634b] text-xs font-bold uppercase tracking-wider border border-[#51634b]/30 flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-[#51634b]"></span> Terkonfirmasi & Lunas
+                    </span>
+                @elseif($booking->status === 'menunggu_pembayaran')
+                    <span class="px-3 py-1 bg-[#b87a38]/15 text-[#b87a38] text-xs font-bold uppercase tracking-wider border border-[#b87a38]/30 flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-[#b87a38]"></span> Menunggu Pembayaran
+                    </span>
+                @elseif($booking->status === 'selesai')
+                    <span class="px-3 py-1 bg-[#2B211E]/15 text-[#2B211E] text-xs font-bold uppercase tracking-wider border border-[#2B211E]/30">
+                        Ekskursi Selesai
+                    </span>
+                @else
+                    <span class="px-3 py-1 bg-gray-200 text-gray-800 text-xs font-bold uppercase tracking-wider">
+                        {{ ucfirst($booking->status) }}
+                    </span>
+                @endif
+            </div>
+            <div class="text-xs text-[#2B211E]/60 mt-1 font-mono">
+                ID SISTEM: {{ $booking->booking_code }} • DIAJUKAN: {{ $booking->created_at->translatedFormat('d F Y, H:i') }} WIB
+            </div>
+        </div>
+
+        <!-- Tombol Aksi Cepat Sesuai Status -->
+        <div class="flex items-center gap-2">
+            @if($booking->status === 'menunggu_pembayaran')
+                <a href="{{ route('buyer.booking.payment', $booking->booking_code) }}" class="rgs-btn-primary px-5 py-2.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">payment</span>
+                    <span>Lanjutkan Pembayaran</span>
+                </a>
+            @else
+                <a href="#dokumen" class="px-4 py-2 bg-[#51634b] text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 hover:bg-[#3f4f3a] transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">file_download</span>
+                    <span>Unduh Dokumen Resmi</span>
+                </a>
+            @endif
+
+            <a href="{{ route('buyer.booking.create', ['reorder' => $booking->booking_code]) }}" class="rgs-btn-outline px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">replay</span>
+                <span>Pesan Ulang</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 5-Stage Visual Progress Tracker -->
+    <div class="rgs-card p-6 border-t-4 border-t-[#703A3A]">
+        <h3 class="font-serif text-sm font-bold text-[#2B211E] uppercase tracking-wider mb-5">
+            Tahapan Verifikasi & Status Pelaksanaan
+        </h3>
+
+        @php
+            $isPaid = in_array($booking->status, ['dibayar', 'dikonfirmasi', 'selesai']);
+            $isConfirmed = in_array($booking->status, ['dikonfirmasi', 'selesai']);
+            $isCompleted = ($booking->status === 'selesai');
+        @endphp
+
+        <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 relative">
+            <!-- Step 1: Pengajuan -->
+            <div class="p-3 border border-[#51634b]/30 bg-[#51634b]/10 text-xs space-y-1">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-[#51634b] text-[10px] uppercase">Langkah 1</span>
+                    <span class="material-symbols-outlined text-[#51634b] text-[16px]">check_circle</span>
+                </div>
+                <div class="font-bold text-[#2B211E]">Pengajuan Masuk</div>
+                <div class="text-[10px] text-[#2B211E]/70">Diterima sistem</div>
+            </div>
+
+            <!-- Step 2: Verifikasi Mitra -->
+            <div class="p-3 border border-[#51634b]/30 bg-[#51634b]/10 text-xs space-y-1">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-[#51634b] text-[10px] uppercase">Langkah 2</span>
+                    <span class="material-symbols-outlined text-[#51634b] text-[16px]">check_circle</span>
+                </div>
+                <div class="font-bold text-[#2B211E]">Kuota Disetujui</div>
+                <div class="text-[10px] text-[#2B211E]/70">Slot tanggal terkonfirmasi</div>
+            </div>
+
+            <!-- Step 3: Pembayaran -->
+            <div class="p-3 border {{ $isPaid ? 'border-[#51634b]/30 bg-[#51634b]/10' : 'border-[#b87a38]/40 bg-[#b87a38]/10 ring-1 ring-[#b87a38]' }} text-xs space-y-1">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold {{ $isPaid ? 'text-[#51634b]' : 'text-[#b87a38]' }} text-[10px] uppercase">Langkah 3</span>
+                    <span class="material-symbols-outlined {{ $isPaid ? 'text-[#51634b]' : 'text-[#b87a38]' }} text-[16px]">
+                        {{ $isPaid ? 'check_circle' : 'pending' }}
+                    </span>
+                </div>
+                <div class="font-bold text-[#2B211E]">Pembayaran Tagihan</div>
+                <div class="text-[10px] text-[#2B211E]/70">
+                    {{ $isPaid ? 'Lunas terverifikasi' : 'Menunggu pembayaran' }}
+                </div>
+            </div>
+
+            <!-- Step 4: Dokumen & Izin -->
+            <div class="p-3 border {{ $isConfirmed ? 'border-[#51634b]/30 bg-[#51634b]/10' : 'border-[#2B211E]/15 bg-[#faf6f0]' }} text-xs space-y-1">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold {{ $isConfirmed ? 'text-[#51634b]' : 'text-[#2B211E]/50' }} text-[10px] uppercase">Langkah 4</span>
+                    <span class="material-symbols-outlined {{ $isConfirmed ? 'text-[#51634b]' : 'text-[#2B211E]/40' }} text-[16px]">
+                        {{ $isConfirmed ? 'check_circle' : 'hourglass_empty' }}
+                    </span>
+                </div>
+                <div class="font-bold text-[#2B211E]">Penerbitan Izin & e-Pass</div>
+                <div class="text-[10px] text-[#2B211E]/70">
+                    {{ $isConfirmed ? 'Siap diunduh' : 'Menunggu pelunasan' }}
+                </div>
+            </div>
+
+            <!-- Step 5: Pelaksanaan -->
+            <div class="p-3 border {{ $isCompleted ? 'border-[#51634b]/30 bg-[#51634b]/10' : 'border-[#2B211E]/15 bg-[#faf6f0]' }} text-xs space-y-1">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold {{ $isCompleted ? 'text-[#51634b]' : 'text-[#2B211E]/50' }} text-[10px] uppercase">Langkah 5</span>
+                    <span class="material-symbols-outlined {{ $isCompleted ? 'text-[#51634b]' : 'text-[#2B211E]/40' }} text-[16px]">
+                        {{ $isCompleted ? 'verified' : 'flag' }}
+                    </span>
+                </div>
+                <div class="font-bold text-[#2B211E]">Ekskursi Lapangan</div>
+                <div class="text-[10px] text-[#2B211E]/70">
+                    {{ $isCompleted ? 'Selesai terlaksana' : 'Jadwal kunjungan' }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2 Kolom Konten Dossier -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- Kolom Kiri: Detail Tapak, PIC, & Rombongan (7 Kolom) -->
+        <div class="lg:col-span-7 space-y-6">
+
+            <!-- Card Informasi Tapak & PIC Pengelola -->
+            <div class="rgs-card p-6 border-t-4 border-t-[#703A3A] space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-[#2B211E]/10">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[#703A3A] text-[20px]">nature_people</span>
+                        <h2 class="font-serif text-lg font-bold text-[#2B211E]">Informasi Destinasi & Pengelola</h2>
+                    </div>
+                    <span class="text-xs font-semibold text-[#703A3A] uppercase">{{ $booking->destination->city }}, {{ $booking->destination->province }}</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                    <div class="sm:col-span-1 aspect-video sm:aspect-square bg-gray-100 border border-[#2B211E]/15 overflow-hidden">
+                        <img src="{{ asset($booking->destination->cover_image) }}" alt="{{ $booking->destination->name }}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="sm:col-span-2 space-y-2">
+                        <h3 class="font-serif text-base font-bold text-[#2B211E]">{{ $booking->destination->name }}</h3>
+                        <p class="text-xs text-[#2B211E]/75 leading-relaxed">
+                            {{ $booking->destination->description }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Kontak PIC Pengelola (Sesuai PRD: Terbuka Penuh Setelah Booking Terverifikasi) -->
+                <div class="p-4 bg-[#faf6f0] border border-[#2B211E]/15 space-y-2 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-[#703A3A] uppercase tracking-wider text-[10px] flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px]">contacts</span>
+                            <span>Kontak Resmi Penanggung Jawab Tapak Adat</span>
+                        </span>
+                        @if($isPaid)
+                            <span class="text-[10px] text-[#51634b] font-bold uppercase flex items-center gap-0.5">
+                                <span class="material-symbols-outlined text-[12px]">lock_open</span> Terverifikasi Terbuka
+                            </span>
+                        @else
+                            <span class="text-[10px] text-[#b87a38] font-bold uppercase flex items-center gap-0.5">
+                                <span class="material-symbols-outlined text-[12px]">lock</span> Terbuka Pasca Pembayaran
+                            </span>
+                        @endif
+                    </div>
+
+                    @php
+                        $contact = $booking->destination->contacts->first();
+                    @endphp
+
+                    @if($contact)
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <div>
+                            <span class="text-[#2B211E]/60 text-[11px] block">Nama Koordinator Tapak:</span>
+                            <span class="font-bold text-[#2B211E]">{{ $contact->contact_name }} ({{ $contact->role }})</span>
+                        </div>
+                        <div>
+                            <span class="text-[#2B211E]/60 text-[11px] block">WhatsApp / Telepon Resmi:</span>
+                            @if($isPaid)
+                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $contact->phone) }}" target="_blank" class="font-bold text-[#51634b] hover:underline flex items-center gap-1">
+                                    <span>{{ $contact->phone }}</span>
+                                    <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+                                </a>
+                            @else
+                                <span class="font-mono text-[#2B211E]/50">0878-xxxx-{{ substr($contact->phone, -4) }} (Disamarkan)</span>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Card Spesifikasi Rombongan Belajar -->
+            <div class="rgs-card p-6 border-t-4 border-t-[#703A3A] space-y-4">
+                <div class="flex items-center gap-2 pb-3 border-b border-[#2B211E]/10">
+                    <span class="material-symbols-outlined text-[#703A3A] text-[20px]">badge</span>
+                    <h2 class="font-serif text-lg font-bold text-[#2B211E]">Rincian Delegasi Rombongan</h2>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+                    <div>
+                        <span class="text-[#2B211E]/60 block text-[11px]">Institusi Pemohon</span>
+                        <span class="font-bold text-[#2B211E]">{{ $booking->institution->institution_name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-[#2B211E]/60 block text-[11px]">PIC Institusi</span>
+                        <span class="font-bold text-[#2B211E]">{{ $booking->user->name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-[#2B211E]/60 block text-[11px]">Kategori Ekskursi</span>
+                        <span class="font-bold text-[#703A3A] uppercase">{{ str_replace('_', ' ', $booking->inquiry_type) }}</span>
+                    </div>
+                    <div>
+                        <span class="text-[#2B211E]/60 block text-[11px]">Tanggal Pelaksanaan</span>
+                        <span class="font-bold text-[#2B211E]">
+                            {{ \Carbon\Carbon::parse($booking->planned_date_start)->translatedFormat('d M Y') }} s/d {{ \Carbon\Carbon::parse($booking->planned_date_end)->translatedFormat('d M Y') }}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="text-[#2B211E]/60 block text-[11px]">Jumlah Siswa</span>
+                        <span class="font-bold text-[#2B211E]">{{ $booking->participant_count }} Orang</span>
+                    </div>
+                    <div>
+                        <span class="text-[#2B211E]/60 block text-[11px]">Guru / Dosen Pendamping</span>
+                        <span class="font-bold text-[#2B211E]">{{ $booking->guide_count }} Orang</span>
+                    </div>
+                </div>
+
+                @if($booking->purpose_notes)
+                <div class="pt-3 border-t border-[#2B211E]/10 text-xs">
+                    <span class="text-[#2B211E]/60 block text-[11px] mb-1">Catatan Kurikulum / Kebutuhan Khusus:</span>
+                    <div class="p-3 bg-[#faf6f0] border border-[#2B211E]/10 italic text-[#2B211E]/80">
+                        "{{ $booking->purpose_notes }}"
+                    </div>
+                </div>
+                @endif
+            </div>
+
+            <!-- Card Pusat Dokumen Resmi Destinara (#dokumen) -->
+            <div id="dokumen" class="rgs-card p-6 border-t-4 border-t-[#51634b] space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-[#2B211E]/10">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[#51634b] text-[20px]">folder_special</span>
+                        <h2 class="font-serif text-lg font-bold text-[#2B211E]">Dokumen Resmi Berstempel Destinara</h2>
+                    </div>
+                    <span class="text-[11px] text-[#51634b] font-bold uppercase">Sah untuk SPK & BOS</span>
+                </div>
+
+                <div class="space-y-3">
+                    @forelse($booking->documents as $doc)
+                    <div class="p-3.5 bg-white border border-[#2B211E]/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-[#703A3A]/10 text-[#703A3A] flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[22px]">description</span>
+                            </div>
+                            <div>
+                                <div class="font-bold text-xs text-[#2B211E]">{{ $doc->title }}</div>
+                                <div class="text-[11px] text-[#2B211E]/60">
+                                    Diterbitkan: {{ $doc->generated_at ? $doc->generated_at->translatedFormat('d M Y, H:i') : $booking->created_at->translatedFormat('d M Y') }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="{{ route('buyer.document.download', ['code' => $booking->booking_code, 'type' => $doc->type]) }}" target="_blank" class="px-3.5 py-1.5 bg-[#faf6f0] hover:bg-[#703A3A] hover:text-white text-[#2B211E] text-xs font-bold uppercase tracking-wider border border-[#2B211E]/20 flex items-center justify-center gap-1.5 transition-colors">
+                            <span class="material-symbols-outlined text-[16px]">visibility</span>
+                            <span>Pratinjau / Unduh</span>
+                        </a>
+                    </div>
+                    @empty
+                    <div class="p-4 bg-[#faf6f0] text-center text-xs text-[#2B211E]/60">
+                        Dokumen resmi akan otomatis diterbitkan begitu pembayaran diselesaikan.
+                    </div>
+                    @endforelse
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Kolom Kanan: Rincian Keuangan & Kasir (5 Kolom) -->
+        <div class="lg:col-span-5 space-y-6">
+
+            <!-- Card Plinth Keuangan Transaksi -->
+            <div class="rgs-card border border-[#2B211E]/20 shadow-sm overflow-hidden">
+                <div class="bg-[#703A3A] text-white p-4">
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-white/70">Rincian Pembayaran Resmi</div>
+                    <div class="font-serif text-xl font-bold">Total: Rp {{ number_format($booking->total_amount, 0, ',', '.') }}</div>
+                </div>
+
+                <div class="p-5 space-y-3 text-xs">
+                    <div class="flex items-center justify-between pb-2 border-b border-[#2B211E]/10">
+                        <span class="text-[#2B211E]/70">Biaya Tapak ({{ $booking->participant_count }} Siswa)</span>
+                        <span class="font-bold text-[#2B211E]">Rp {{ number_format($booking->subtotal_amount, 0, ',', '.') }}</span>
+                    </div>
+
+                    <div class="flex items-center justify-between pb-2 border-b border-[#2B211E]/10">
+                        <span class="text-[#2B211E]/70">Premi Asuransi Siswa (Rp 2.000/pax)</span>
+                        <span class="font-bold text-[#2B211E]">Rp {{ number_format($booking->insurance_amount, 0, ',', '.') }}</span>
+                    </div>
+
+                    <div class="flex items-center justify-between pb-2 border-b border-[#2B211E]/10">
+                        <span class="text-[#2B211E]/70">Administrasi & Verifikasi Dokumen</span>
+                        <span class="font-bold text-[#2B211E]">Rp {{ number_format($booking->platform_fee, 0, ',', '.') }}</span>
+                    </div>
+
+                    <!-- Status Pembayaran Plinth -->
+                    <div class="p-3.5 {{ $isPaid ? 'bg-[#51634b]/10 border-[#51634b]/30' : 'bg-[#b87a38]/10 border-[#b87a38]/30' }} border flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-[#2B211E]/60 block">Status Transaksi</span>
+                            <span class="font-bold text-sm {{ $isPaid ? 'text-[#51634b]' : 'text-[#b87a38]' }}">
+                                {{ $isPaid ? 'LUNAS TERVERIFIKASI' : 'BELUM DIBAYAR' }}
+                            </span>
+                        </div>
+                        @if($isPaid)
+                            <span class="material-symbols-outlined text-[#51634b] text-[24px]">verified</span>
+                        @else
+                            <span class="material-symbols-outlined text-[#b87a38] text-[24px]">schedule</span>
+                        @endif
+                    </div>
+
+                    <!-- Tombol Aksi Kasir -->
+                    @if(!$isPaid)
+                        <a href="{{ route('buyer.booking.payment', $booking->booking_code) }}" class="w-full rgs-btn-primary py-3 px-4 text-xs font-bold uppercase tracking-widest shadow-sm flex items-center justify-center gap-2">
+                            <span>Buka Halaman Kasir / Bayar</span>
+                            <span class="material-symbols-outlined text-[18px]">credit_card</span>
+                        </a>
+                    @else
+                        <div class="p-3 bg-[#51634b]/8 border border-[#51634b]/20 text-[11px] text-[#51634b] font-medium leading-relaxed">
+                            ✓ Pembayaran telah diterima via <strong>{{ strtoupper(str_replace('_', ' ', $booking->payment->payment_method ?? 'VA')) }}</strong> pada {{ $booking->payment->paid_at ? $booking->payment->paid_at->translatedFormat('d M Y, H:i') : '-' }} WIB.
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Callout Kebijakan Lapangan & Kepatuhan Adat -->
+            <div class="rgs-card p-4 space-y-2 text-xs border-l-4 border-l-[#51634b]">
+                <span class="font-bold text-[#2B211E] block">Protokol FPIC & Keselamatan Lapangan</span>
+                <p class="text-[11px] text-[#2B211E]/70 leading-relaxed">
+                    Setiap rombongan wajib menaati panduan kearifan lokal yang telah disepakati, menjaga kebersihan area adat, serta menggunakan e-Pass resmi saat tiba di lokasi.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+@endsection
